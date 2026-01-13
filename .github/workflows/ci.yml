@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install deps
+        run: go mod download
+
+      - name: Start Postgres service
+        uses: docker://postgres:15
+
+      - name: Wait for Postgres
+        run: |
+          for i in `seq 1 10`; do
+            nc -z localhost 5432 && echo ok && exit 0 || sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+
+      - name: Set POSTGRES_DSN
+        run: echo "POSTGRES_DSN=host=localhost port=5432 user=postgres password=postgres dbname=subscriptions_db sslmode=disable" >> $GITHUB_ENV
+
+      - name: Run tests
+        env:
+          POSTGRES_DSN: ${{ env.POSTGRES_DSN }}
+        run: go test ./...
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: v1.59.0
+          args: run --timeout 5m

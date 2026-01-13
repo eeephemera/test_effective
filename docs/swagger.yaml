@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+  title: Subscriptions API
+  version: 1.0.0
+servers:
+  - url: / 
+paths:
+  /subscriptions/:
+    post:
+      summary: Create subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+            example:
+              service_name: "Yandex Plus"
+              price: 400
+              user_id: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+              start_date: "07-2025"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+    get:
+      summary: List subscriptions
+      parameters:
+        - in: query
+          name: user_id
+          schema:
+            type: string
+        - in: query
+          name: service_name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+  /subscriptions/{id}:
+    get:
+      summary: Get subscription by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update subscription
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+    delete:
+      summary: Delete subscription
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+  /subscriptions/aggregate:
+    get:
+      summary: Aggregate total price for a period
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+          description: Start month in MM-YYYY
+          required: true
+        - in: query
+          name: to
+          schema:
+            type: string
+          description: End month in MM-YYYY
+          required: true
+        - in: query
+          name: user_id
+          schema:
+            type: string
+          description: Filter by user id (optional)
+        - in: query
+          name: service_name
+          schema:
+            type: string
+          description: Filter by service name (optional)
+      responses:
+        '200':
+          description: Aggregated total
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AggregateResponse'
+components:
+  schemas:
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+        service_name:
+          type: string
+        price:
+          type: integer
+        user_id:
+          type: string
+        start_date:
+          type: string
+          description: Stored as date (first day of month)
+        end_date:
+          type: string
+          nullable: true
+    SubscriptionRequest:
+      type: object
+      required: [service_name, price, user_id, start_date]
+      properties:
+        service_name:
+          type: string
+        price:
+          type: integer
+          description: Monthly price in rubles
+        user_id:
+          type: string
+        start_date:
+          type: string
+          description: MM-YYYY
+        end_date:
+          type: string
+          nullable: true
+          description: MM-YYYY
+    AggregateResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total sum in rubles
+    Error:
+      type: object
+      properties:
+        error:
+          type: string

@@ -1,0 +1,9 @@
+server:
+  address: ":8080"
+postgres:
+  host: "postgres"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  dbname: "subscriptions_db"
+timeout: 5s

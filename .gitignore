@@ -1,0 +1,29 @@
+# Binaries
+/subscriptions
+
+# Build outputs
+bin/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.local
+
+# Editor dirs
+.vscode/
+.idea/
+
+# Dependency directories
+vendor/
+
+# Test output
+*.test
+
+# Docker
+db-data/
+
+# Go
+coverage.out
